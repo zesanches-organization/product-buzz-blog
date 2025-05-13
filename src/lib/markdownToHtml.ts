@@ -1,10 +1,12 @@
 
-import { remark } from 'remark';
-import html from 'remark-html';
+import { unified } from 'unified';
+import remarkParse from 'remark-parse';
+import remarkHtml from 'remark-html';
 
 export default async function markdownToHtml(markdown: string): Promise<string> {
-  const result = await remark()
-    .use(html, { sanitize: false })
+  const result = await unified()
+    .use(remarkParse)
+    .use(remarkHtml, { sanitize: false })
     .process(markdown);
     
   return result.toString();
