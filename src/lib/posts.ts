@@ -30,6 +30,9 @@ const postsContent: Record<string, string> = {
   'smartwatch-fitness-2023.md': smartwatch,
 };
 
+// For storing new posts (they will be lost on refresh as this is client-side only)
+const newPosts: Record<string, string> = {};
+
 // Parse post content
 function parsePostContent(fileName: string, content: string): Post {
   const { data, content: postContent } = matter(content);
@@ -41,10 +44,15 @@ function parsePostContent(fileName: string, content: string): Post {
 
 export function getAllPosts(): Post[] {
   try {
-    // Get all posts
-    const allPostsData = Object.entries(postsContent).map(([fileName, content]) => {
-      return parsePostContent(fileName, content);
-    });
+    // Get all posts (including new ones)
+    const allPostsData = [
+      ...Object.entries(postsContent).map(([fileName, content]) => {
+        return parsePostContent(fileName, content);
+      }),
+      ...Object.entries(newPosts).map(([fileName, content]) => {
+        return parsePostContent(fileName, content);
+      })
+    ];
 
     // Sort posts by date
     return allPostsData.sort((a, b) => {
@@ -62,8 +70,8 @@ export function getAllPosts(): Post[] {
 
 export function getPostBySlug(slug: string): Post | null {
   try {
-    // Find the post that matches the slug
-    const postEntry = Object.entries(postsContent).find(([_, content]) => {
+    // Find the post that matches the slug in both sources
+    const postEntry = [...Object.entries(postsContent), ...Object.entries(newPosts)].find(([_, content]) => {
       const { data } = matter(content);
       return data.slug === slug;
     });
@@ -76,6 +84,25 @@ export function getPostBySlug(slug: string): Post | null {
     return parsePostContent(fileName, content);
   } catch (error) {
     console.error(`Error fetching post with slug ${slug}:`, error);
+    return null;
+  }
+}
+
+export function createPost(post: PostFrontmatter, content: string): Post | null {
+  try {
+    // Create frontmatter content
+    const postContent = matter.stringify(content, post);
+    const fileName = `${post.slug}.md`;
+    
+    // Add to newPosts
+    newPosts[fileName] = postContent;
+    
+    return {
+      frontmatter: post,
+      content: content,
+    };
+  } catch (error) {
+    console.error('Error creating post:', error);
     return null;
   }
 }

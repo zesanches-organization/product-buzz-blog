@@ -1,140 +1,66 @@
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Menu, X } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
-import { Menu, Search, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { useIsMobile } from '@/hooks/use-mobile';
 
-export default function Header() {
+const Header = () => {
+  const isMobile = useIsMobile();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
 
-  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
-  const toggleSearch = () => setIsSearchOpen(!isSearchOpen);
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Implement search functionality
-    console.log('Searching for:', searchQuery);
-    setIsSearchOpen(false);
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-background border-b border-border">
-      <div className="container mx-auto px-4 py-4">
-        <div className="flex items-center justify-between">
-          {/* Logo */}
-          <Link to="/" className="font-bold text-xl lg:text-2xl">
-            BlogRecomenda
-          </Link>
+    <header className="border-b sticky top-0 z-40 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+        {/* Logo */}
+        <Link to="/" className="text-2xl font-bold tracking-tight">
+          TechReviews
+        </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-6">
-            <Link to="/" className="text-foreground hover:text-primary transition-colors">
-              Home
-            </Link>
-            <Link to="/categorias" className="text-foreground hover:text-primary transition-colors">
-              Categorias
-            </Link>
-            <Link to="/sobre" className="text-foreground hover:text-primary transition-colors">
-              Sobre
-            </Link>
-            <Link to="/contato" className="text-foreground hover:text-primary transition-colors">
-              Contato
-            </Link>
-          </nav>
+        {/* Mobile Menu Button */}
+        {isMobile && (
+          <button onClick={toggleMenu} className="block md:hidden p-2">
+            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        )}
 
-          {/* Right side buttons */}
-          <div className="flex items-center space-x-2">
-            {/* Search toggle */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleSearch}
-              className="rounded-full"
-              aria-label="Buscar"
-            >
-              <Search className="h-5 w-5" />
-            </Button>
-            
-            {/* Theme toggle */}
+        {/* Desktop Navigation */}
+        {!isMobile && (
+          <nav className="flex items-center gap-6">
+            <Link to="/" className="text-foreground/80 hover:text-foreground transition-colors">Home</Link>
+            <Link to="/categorias" className="text-foreground/80 hover:text-foreground transition-colors">Categorias</Link>
+            <Link to="/sobre" className="text-foreground/80 hover:text-foreground transition-colors">Sobre</Link>
+            <Link to="/contato" className="text-foreground/80 hover:text-foreground transition-colors">Contato</Link>
+            <Link to="/admin" className="text-foreground/80 hover:text-foreground transition-colors">Admin</Link>
             <ThemeToggle />
-            
-            {/* Mobile menu button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleMenu}
-              className="rounded-full md:hidden"
-              aria-label="Menu"
-            >
-              {isMenuOpen ? (
-                <X className="h-5 w-5" />
-              ) : (
-                <Menu className="h-5 w-5" />
-              )}
-            </Button>
-          </div>
-        </div>
-
-        {/* Search overlay */}
-        {isSearchOpen && (
-          <div className="absolute inset-x-0 top-full mt-px bg-background border-b border-border p-4 shadow-lg">
-            <form onSubmit={handleSearch} className="flex gap-2">
-              <Input
-                type="search"
-                placeholder="Buscar artigos..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="flex-1"
-                autoFocus
-              />
-              <Button type="submit">Buscar</Button>
-              <Button type="button" variant="ghost" onClick={() => setIsSearchOpen(false)}>
-                Cancelar
-              </Button>
-            </form>
-          </div>
-        )}
-
-        {/* Mobile menu */}
-        {isMenuOpen && (
-          <nav className="md:hidden border-t border-border mt-4 py-4">
-            <div className="flex flex-col space-y-4">
-              <Link 
-                to="/" 
-                className="text-foreground hover:text-primary transition-colors px-2 py-1"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Home
-              </Link>
-              <Link 
-                to="/categorias" 
-                className="text-foreground hover:text-primary transition-colors px-2 py-1"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Categorias
-              </Link>
-              <Link 
-                to="/sobre" 
-                className="text-foreground hover:text-primary transition-colors px-2 py-1"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Sobre
-              </Link>
-              <Link 
-                to="/contato" 
-                className="text-foreground hover:text-primary transition-colors px-2 py-1"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Contato
-              </Link>
-            </div>
           </nav>
         )}
+
+        {/* Mobile Navigation */}
+        {isMobile && isMenuOpen && (
+          <div className="absolute top-16 left-0 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-md z-50">
+            <nav className="flex flex-col p-4">
+              <Link to="/" className="py-2 text-foreground/80 hover:text-foreground transition-colors" onClick={toggleMenu}>Home</Link>
+              <Link to="/categorias" className="py-2 text-foreground/80 hover:text-foreground transition-colors" onClick={toggleMenu}>Categorias</Link>
+              <Link to="/sobre" className="py-2 text-foreground/80 hover:text-foreground transition-colors" onClick={toggleMenu}>Sobre</Link>
+              <Link to="/contato" className="py-2 text-foreground/80 hover:text-foreground transition-colors" onClick={toggleMenu}>Contato</Link>
+              <Link to="/admin" className="py-2 text-foreground/80 hover:text-foreground transition-colors" onClick={toggleMenu}>Admin</Link>
+              <div className="py-2">
+                <ThemeToggle />
+              </div>
+            </nav>
+          </div>
+        )}
+
+        {/* Theme Toggle (Mobile) */}
+        {isMobile && !isMenuOpen && <ThemeToggle />}
       </div>
     </header>
   );
-}
+};
+
+export default Header;
