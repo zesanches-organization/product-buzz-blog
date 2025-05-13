@@ -1,15 +1,14 @@
 
-export const GA_TRACKING_ID = 'G-XXXXXXXXXX'; // Replace with your Google Analytics ID
-
-// Google Analytics functions
-export const pageview = (url: URL): void => {
-  if (typeof window !== 'undefined' && window.gtag) {
-    window.gtag('config', GA_TRACKING_ID, {
+// Track pageviews with GA4
+export const pageView = (url: string) => {
+  if (typeof window.gtag === 'function') {
+    window.gtag('config', process.env.NEXT_PUBLIC_GA_ID || '', {
       page_path: url,
     });
   }
 };
 
+// Track events with GA4
 export const event = ({
   action,
   category,
@@ -20,8 +19,8 @@ export const event = ({
   category: string;
   label: string;
   value?: number;
-}): void => {
-  if (typeof window !== 'undefined' && window.gtag) {
+}) => {
+  if (typeof window.gtag === 'function') {
     window.gtag('event', action, {
       event_category: category,
       event_label: label,
