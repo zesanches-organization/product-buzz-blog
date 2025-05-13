@@ -1,9 +1,10 @@
 
-import fs from 'fs';
-import path from 'path';
-import matter from 'gray-matter';
+// Import JSON data directly
+import headphones from '../content/posts/headphones-bluetooth-2023.md?raw';
+import smartphone from '../content/posts/smartphone-top-2023.md?raw';
+import smartwatch from '../content/posts/smartwatch-fitness-2023.md?raw';
 
-const postsDirectory = path.join(process.cwd(), 'src/content/posts');
+import matter from 'gray-matter';
 
 export type PostFrontmatter = {
   title: string;
@@ -22,25 +23,27 @@ export type Post = {
   content: string;
 };
 
+// Create a map of all post content
+const postsContent: Record<string, string> = {
+  'headphones-bluetooth-2023.md': headphones,
+  'smartphone-top-2023.md': smartphone,
+  'smartwatch-fitness-2023.md': smartwatch,
+};
+
+// Parse post content
+function parsePostContent(fileName: string, content: string): Post {
+  const { data, content: postContent } = matter(content);
+  return {
+    frontmatter: data as PostFrontmatter,
+    content: postContent,
+  };
+}
+
 export function getAllPosts(): Post[] {
   try {
-    // Get file names under /posts
-    const fileNames = fs.readdirSync(postsDirectory);
-    const allPostsData = fileNames.map((fileName) => {
-      // Remove ".md" from file name to get id
-      const id = fileName.replace(/\.md$/, '');
-
-      // Read markdown file as string
-      const fullPath = path.join(postsDirectory, fileName);
-      const fileContents = fs.readFileSync(fullPath, 'utf8');
-
-      // Use gray-matter to parse the post metadata section
-      const { data, content } = matter(fileContents);
-
-      return {
-        frontmatter: data as PostFrontmatter,
-        content,
-      };
+    // Get all posts
+    const allPostsData = Object.entries(postsContent).map(([fileName, content]) => {
+      return parsePostContent(fileName, content);
     });
 
     // Sort posts by date
@@ -59,28 +62,18 @@ export function getAllPosts(): Post[] {
 
 export function getPostBySlug(slug: string): Post | null {
   try {
-    const fileNames = fs.readdirSync(postsDirectory);
-    
-    // Find the file that matches the slug
-    const fileName = fileNames.find((fileName) => {
-      const fullPath = path.join(postsDirectory, fileName);
-      const fileContents = fs.readFileSync(fullPath, 'utf8');
-      const { data } = matter(fileContents);
+    // Find the post that matches the slug
+    const postEntry = Object.entries(postsContent).find(([_, content]) => {
+      const { data } = matter(content);
       return data.slug === slug;
     });
 
-    if (!fileName) {
+    if (!postEntry) {
       return null;
     }
 
-    const fullPath = path.join(postsDirectory, fileName);
-    const fileContents = fs.readFileSync(fullPath, 'utf8');
-    const { data, content } = matter(fileContents);
-
-    return {
-      frontmatter: data as PostFrontmatter,
-      content,
-    };
+    const [fileName, content] = postEntry;
+    return parsePostContent(fileName, content);
   } catch (error) {
     console.error(`Error fetching post with slug ${slug}:`, error);
     return null;
